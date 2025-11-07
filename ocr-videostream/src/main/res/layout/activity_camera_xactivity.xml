@@ -1,0 +1,33 @@
+<RelativeLayout android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <androidx.camera.view.PreviewView
+        android:id="@+id/viewFinder"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <com.ndzl.aisuite.ocr.lowlevel.OverlayView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/overlayView"/>
+        />
+
+    <TextView
+        android:id="@+id/tvOCRout"
+        android:layout_width="wrap_content"
+        android:layout_height="72dp"
+        android:layout_weight="1"
+        android:text="" />
+
+    <ToggleButton
+        android:id="@+id/toggleFlipperMode"
+        android:layout_below="@id/tvOCRout"
+        android:layout_width="159dp"
+        android:layout_height="40dp"
+        android:textOn="NORMAL L2R TEXT"
+        android:textOff="MOLD TEXT"
+        android:checked="true"
+        />
+
+</RelativeLayout>

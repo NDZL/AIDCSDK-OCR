@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:fillViewport="false">
+
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="3dp"
+        android:layout_marginRight="3dp"
+        android:orientation="vertical"
+        tools:ignore="MissingConstraints">
+
+        <androidx.camera.view.PreviewView
+            android:id="@+id/viewFinder"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="3dp"
+            android:layout_marginRight="3dp"
+            android:orientation="horizontal"
+            android:weightSum="3">
+
+            <Button
+                android:id="@+id/image_capture_button"
+                android:layout_width="110dp"
+                android:layout_height="60dp"
+                android:layout_marginEnd="5dp"
+                android:layout_marginBottom="5dp"
+                android:elevation="2dp"
+                android:text="@string/take_photo" />
+
+            <Button
+                android:id="@+id/batch_process_button"
+                android:layout_width="110dp"
+                android:layout_height="60dp"
+                android:layout_marginStart="5dp"
+                android:layout_marginBottom="5dp"
+                android:elevation="2dp"
+                android:text="BATCH PROCESS" />
+
+
+            <Button
+                android:id="@+id/test_button"
+                android:layout_width="110dp"
+                android:layout_height="60dp"
+                android:layout_marginStart="5dp"
+                android:layout_marginBottom="5dp"
+                android:elevation="2dp"
+                android:text="THREADING" />
+
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvOCRout"
+            android:layout_width="wrap_content"
+            android:layout_height="72dp"
+            android:layout_weight="1"
+            android:text="Recognized words" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="3dp"
+            android:layout_marginRight="3dp"
+            android:orientation="horizontal">
+
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/switch1"
+                android:onClick="boolSave"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="SAVE" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/switch2"
+                android:onClick="boolLoop"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="LOOP" />
+
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/switch3"
+                android:onClick="boolLog"
+                android:checked="false"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="LOG" />
+
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/switch4"
+                android:onClick="boolDetectParagraphs"
+                android:checked="false"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="§" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>
