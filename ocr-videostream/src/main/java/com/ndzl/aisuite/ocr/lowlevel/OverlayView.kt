@@ -79,7 +79,7 @@ class OverlayView(context: Context, attrs: AttributeSet?) : View(context, attrs)
         if(clq.isNotEmpty())
             clq.map {
 
-                if (timestamp - (it.timestamp) < 500) {
+                if (timestamp - (it.timestamp) < 300) {
 
                    // canvas.drawCircle(it.xavg, it.yavg, 2f, it.paint)
                     if(CameraXActivity.isL2Rtext)

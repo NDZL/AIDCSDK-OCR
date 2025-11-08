@@ -144,7 +144,7 @@ class CameraXActivity : AppCompatActivity() {
 
         val timebegin = System.currentTimeMillis()
 
-        periodJobOnCanvas(300) //refresh overlayView canvas every 0.5s
+        periodJobOnCanvas(150) //refresh overlayView canvas every 0.5s
 
         viewBinding.tvOCRout.visibility = View.VISIBLE
         viewBinding.overlayView.visibility = View.VISIBLE
@@ -223,6 +223,13 @@ class CameraXActivity : AppCompatActivity() {
 
     }
 
+    fun deleteCLQOlderHalf(){
+        val halfSize = viewBinding.overlayView.clq.size / 2
+        for (i in 0 until halfSize) {
+            viewBinding.overlayView.clq.poll()
+        }
+    }
+
     private fun periodJobOnCanvas(timeInterval: Long) {
         val handler = Handler()
         val runnable = object : Runnable {
@@ -230,7 +237,8 @@ class CameraXActivity : AppCompatActivity() {
 
                 viewBinding.overlayView?.invalidate()
 
-                viewBinding.overlayView?.clq?.clear()
+                //viewBinding.overlayView?.clq?.clear()
+                deleteCLQOlderHalf()
 
                 handler.postDelayed(this, timeInterval)
 

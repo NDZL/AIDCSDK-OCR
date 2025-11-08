@@ -21,6 +21,12 @@ android {
 
     }
 
+    applicationVariants.all { variant ->
+        variant.outputs.all {
+            outputFileName = "aisuite-ocr-cxnt48-v${variant.versionName}.apk"
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false
