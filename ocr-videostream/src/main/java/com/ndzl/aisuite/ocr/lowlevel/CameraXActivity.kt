@@ -55,6 +55,7 @@ import zebra.BarcodeDetector.BuildConfig
 import zebra.BarcodeDetector.databinding.ActivityCameraXactivityBinding
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import androidx.core.graphics.scale
 
 
 class CameraXActivity : AppCompatActivity() {
@@ -87,6 +88,13 @@ class CameraXActivity : AppCompatActivity() {
 
 
         viewBinding = ActivityCameraXactivityBinding.inflate(layoutInflater)
+
+//        val vparams = viewBinding.viewFinder.layoutParams
+//        vparams.height = resources.displayMetrics.heightPixels / 3
+//        viewBinding.viewFinder.layoutParams = vparams
+
+        viewBinding.tvOCRout.text = ""
+
         setContentView(viewBinding.root)
 
         runBlocking(Executors.newSingleThreadExecutor().asCoroutineDispatcher()) {
@@ -103,6 +111,12 @@ class CameraXActivity : AppCompatActivity() {
             } else {
                 isL2Rtext = false
             }
+        }
+
+        viewBinding.lowerPanel.post {
+            val panelHeight = (viewBinding.viewFinder.height * 2) / 3
+            viewBinding.lowerPanel.layoutParams = viewBinding.lowerPanel.layoutParams.apply { height = panelHeight }
+            viewBinding.lowerPanel.requestLayout()
         }
 
 
@@ -271,6 +285,28 @@ class CameraXActivity : AppCompatActivity() {
         return rotateBitmap(imageProxy.toBitmap(), rotationDegrees)
     }
 
+    fun bitmapBlankUpperAndLowerThirds(src: Bitmap): Bitmap {
+        val height = src.height
+        val width = src.width
+        val thirdHeight = height / 3
+
+        val result = src.copy(src.config!!, true)
+
+        val canvas = android.graphics.Canvas(result)
+        val paint = android.graphics.Paint().apply {
+            color = android.graphics.Color.BLACK
+            style = android.graphics.Paint.Style.FILL
+        }
+
+        // Blank upper third
+        //canvas.drawRect(0f, 0f, width.toFloat(), thirdHeight.toFloat(), paint)
+
+        // Blank lower third
+        canvas.drawRect(0f, (1 * thirdHeight).toFloat(), width.toFloat(), height.toFloat(), paint)
+
+        return result
+    }
+
     val horizontalFlip  = { src:Bitmap ->
         val matrix = Matrix().apply { preScale(-1f, 1f) }
         Bitmap.createBitmap(src, 0, 0, src.width, src.height, matrix, true)
@@ -291,6 +327,7 @@ class CameraXActivity : AppCompatActivity() {
        if(!isL2Rtext)
               bitmap = horizontalFlip(bitmap)
        }
+       bitmap = bitmapBlankUpperAndLowerThirds(bitmap)
 
        Log.d("CameraXActivity", "Bitmap size: ${bitmap.width}x${bitmap.height}")
 
