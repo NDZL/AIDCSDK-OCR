@@ -1,0 +1,4 @@
+rootProject.name = "CVSDK OCR"
+//include ":ocr-older-sdk" //first cv experiments, images acquired via camera only through multiple shots
+//include ":ocr-videostream" //current cv sdk for ocr, images acquired via camera through video stream, mimics barcode videostream.
+include ":ocr-oneshot" //current cv sdk for ocr, images acquired via camera one shot

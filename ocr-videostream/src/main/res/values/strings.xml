@@ -1,0 +1,24 @@
+<resources>
+    <string name="app_name">CV BC-VideoStream</string>
+
+    <string-array name="image_size_items">
+        <item>0.3 Mpx</item>
+        <item>2 Mpx</item>
+        <item>3 Mpx</item>
+        <item>5 Mpx</item>
+        <item>MAX</item>
+    </string-array>
+    <string-array name="scene_items">
+        <item>STEADYPHOTO</item>
+        <item>ACTION</item>
+        <item>SPORTS</item>
+        <item>BARCODE</item>
+    </string-array>
+    <string-array name="zoom_items">
+        <item>1.0x</item>
+        <item>1.5x</item>
+        <item>2.0x</item>
+        <item>3.0x</item>
+        <item>5.0x</item>
+    </string-array>
+</resources>
