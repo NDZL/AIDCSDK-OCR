@@ -23,7 +23,7 @@ class OverlayView(context: Context, attrs: AttributeSet?) : View(context, attrs)
         var CAMERA_RESOLUTION_HEIGHT = 640
         var CHOSEN_SCENE=0
         var ZOOM_RATIO=1.0
-
+        var MODEL_DIMS=800
 
         var PREVIEW_WIDTH = 0
         var PREVIEW_HEIGHT = 0

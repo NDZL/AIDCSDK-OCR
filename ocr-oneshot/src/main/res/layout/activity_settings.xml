@@ -46,6 +46,20 @@
         android:layout_gravity="center"
         android:entries="@array/zoom_items"/>
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="?android:attr/listDivider" />
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="MODEL DIMENSION" />
+    <Spinner
+        android:id="@+id/spinnerDIMS"
+        android:layout_width="wrap_content"
+        android:layout_height="88dp"
+        android:layout_gravity="center"
+        android:entries="@array/model_dims"/>
 
     <View
         android:layout_width="match_parent"

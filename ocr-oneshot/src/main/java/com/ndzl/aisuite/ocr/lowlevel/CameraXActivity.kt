@@ -50,6 +50,8 @@ class CameraXActivity : AppCompatActivity() {
 
     var overalltime =0L
 
+    val soundMachine = SoundMachine()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         title = "zebra/aisuite/1-shot Ocr by cxnt48"
@@ -67,6 +69,7 @@ class CameraXActivity : AppCompatActivity() {
 
        val btOCR =  viewBinding.btnOCR
         btOCR.setOnClickListener {
+            soundMachine.playSound()
             overalltime = System.currentTimeMillis()
             captureStillForOCR()
         }
@@ -93,7 +96,7 @@ class CameraXActivity : AppCompatActivity() {
     }
 
     private fun loadSettings() {
-        val imageSize = sharedPreferences.getInt("IMAGESIZE", 1)
+        val imageSize = sharedPreferences.getInt("IMAGESIZE", 2)
         when (imageSize) {
             0 -> {
                 OverlayView.CAMERA_RESOLUTION_WIDTH = 480
@@ -133,6 +136,15 @@ class CameraXActivity : AppCompatActivity() {
             3 -> OverlayView.ZOOM_RATIO = 3.0
             4 -> OverlayView.ZOOM_RATIO = 5.0
         }
+
+        val modeldim = sharedPreferences.getInt("MODELDIM", 1)
+        when (modeldim) {
+            0 -> OverlayView.MODEL_DIMS = 640
+            1 -> OverlayView.MODEL_DIMS = 800
+            2 -> OverlayView.MODEL_DIMS = 1600
+        }
+
+
     }
 
     private fun initializeTextOCR() {
@@ -150,8 +162,8 @@ class CameraXActivity : AppCompatActivity() {
             detectionInferencerOptions.runtimeProcessorOrder = rpo
             recognitionInferencerOptions.runtimeProcessorOrder = rpo
             detectionInferencerOptions.defaultDims.apply {
-                height = 640
-                width = 640
+                height = OverlayView.MODEL_DIMS
+                width = OverlayView.MODEL_DIMS
             }
         }
 

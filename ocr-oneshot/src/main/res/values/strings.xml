@@ -21,4 +21,9 @@
         <item>3.0x</item>
         <item>5.0x</item>
     </string-array>
+    <string-array name="model_dims">
+        <item>600x600</item>
+        <item>800x800</item>
+        <item>1600x1600</item>
+    </string-array>
 </resources>

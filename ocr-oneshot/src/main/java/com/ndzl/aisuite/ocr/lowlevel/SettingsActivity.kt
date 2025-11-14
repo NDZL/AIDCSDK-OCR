@@ -216,9 +216,7 @@ class SettingsActivity : AppCompatActivity() {
             putInt("IMAGESIZE", binding.spinnerIMAGESIZE.selectedItemPosition)
             putInt("SCENE", binding.spinnerSCENE.selectedItemPosition)
             putInt("ZOOM", binding.spinnerZOOM.selectedItemPosition)
-
-
-
+            putInt("MODELDIM", binding.spinnerDIMS.selectedItemPosition)
 
             apply()
         }
@@ -226,17 +224,15 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun loadSettings() {
-        val imageSize = sharedPreferences.getInt("IMAGESIZE", 1)
+        val imageSize = sharedPreferences.getInt("IMAGESIZE", 2)
         val scene = sharedPreferences.getInt("SCENE", 0)
         val zoom = sharedPreferences.getInt("ZOOM", 0)
         val barcodesToHighlight = sharedPreferences.getString("BARCODESTOHIGHLIGHT", "")
+        val modeldim = sharedPreferences.getInt("MODELDIM", 1)
 
         binding.spinnerIMAGESIZE.setSelection(imageSize)
         binding.spinnerSCENE.setSelection(scene)
         binding.spinnerZOOM.setSelection(zoom)
-
-
-
-
+        binding.spinnerDIMS.setSelection(modeldim)
     }
 }
