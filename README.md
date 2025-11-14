@@ -8,6 +8,13 @@
 
 ## App Setup
 
+### Installation instructions
+- `adb install -g apkfile.apk`
+- or manually grant all needed permissions
+
+  <img width="344" height="496" alt="image" src="https://github.com/user-attachments/assets/88c2b143-88d8-4e3e-999c-a2c6fc08d9ab" />
+
+
 ### Installed icons
 Two icons get installed
 
