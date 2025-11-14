@@ -23,7 +23,7 @@ android {
 
     applicationVariants.all { variant ->
         variant.outputs.all {
-            outputFileName = "aisuite-ocr-cxnt48-v${variant.versionName}.apk"
+            outputFileName = "aisuite-1shotOCR-cxnt48-v${variant.versionName}.apk"
         }
     }
 
