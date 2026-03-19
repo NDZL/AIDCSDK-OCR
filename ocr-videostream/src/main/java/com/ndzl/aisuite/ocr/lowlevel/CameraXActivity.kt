@@ -24,6 +24,7 @@ import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
+import androidx.camera.core.internal.utils.ImageUtil.rotateBitmap
 import androidx.camera.core.resolutionselector.ResolutionSelector
 import androidx.camera.core.resolutionselector.ResolutionSelector.PREFER_HIGHER_RESOLUTION_OVER_CAPTURE_RATE
 import androidx.camera.core.resolutionselector.ResolutionStrategy
@@ -34,28 +35,19 @@ import com.zebra.ai.vision.detector.AIVisionSDKLicenseException
 import com.zebra.ai.vision.detector.InferencerOptions
 import com.zebra.ai.vision.detector.InvalidInputException
 import com.zebra.ai.vision.detector.TextOCR
-import com.zebra.ai.vision.internal.utils.ImageConverter.rotateBitmap
 import kotlinx.coroutines.CoroutineScope
-
-
-//import com.zebra.ai.vision.AIVisionSDK
-//
-//import com.zebra.ai.vision.BBox
-//import com.zebra.ai.vision.BarcodeDecoder
-//import com.zebra.ai.vision.InferencerOptions;
-//import com.zebra.ai.vision.Localizer
 
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import zebra.BarcodeDetector.BuildConfig
 
 
 import zebra.BarcodeDetector.databinding.ActivityCameraXactivityBinding
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import androidx.core.graphics.scale
+import kotlin.math.pow
 
 
 class CameraXActivity : AppCompatActivity() {
@@ -76,7 +68,7 @@ class CameraXActivity : AppCompatActivity() {
 
     val soundMachine = SoundMachine()
 
-    private val TAG = "OCRSample"
+
     private var textOCR: TextOCR? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -144,7 +136,7 @@ class CameraXActivity : AppCompatActivity() {
 
         val timebegin = System.currentTimeMillis()
 
-        periodJobOnCanvas(200) //refresh overlayView canvas every 0.5s
+        periodJobOnCanvas(VIEW_RESET_PERIOD_MS) //refresh overlayView canvas every 0.5s
 
         viewBinding.tvOCRout.visibility = View.VISIBLE
         viewBinding.overlayView.visibility = View.VISIBLE
@@ -265,11 +257,59 @@ class CameraXActivity : AppCompatActivity() {
             }
         }
 
+        val textOCRSettings_for_LABEL_INDENTIFICATION = TextOCR.Settings("text-ocr-recognizer").apply {
+            val rpo = arrayOf(
+                InferencerOptions.DSP,
+                InferencerOptions.CPU,
+                InferencerOptions.GPU
+            )
+
+            detectionInferencerOptions.runtimeProcessorOrder = rpo
+            recognitionInferencerOptions.runtimeProcessorOrder = rpo
+            detectionInferencerOptions.defaultDims.apply {
+                height = 640
+                width = 640
+            }
+
+            heatmapThreshold = 0.6f;  // Default 0.5f → raise to reduce noise
+
+// Higher box threshold to keep only confident detections
+            boxThreshold = 0.9f;      // Default 0.85f → raise to reduce false positives
+
+// --- Filtering Parameters (KEY for dropping small text) ---
+// Increase minBoxArea significantly to eliminate small text boxes
+            minBoxArea = 15;          // Default 10 → raise substantially
+
+// Increase minBoxSize to filter out small/narrow text
+            minBoxSize = 5;           // Default 1 → raise to reject small text
+
+// Keep unclipRatio at default for labels
+            unclipRatio = 1.5f;        // Default 1.5f
+
+// Keep rotation default
+            minRatioForRotation = 1.5f; // Default 1.5f
+
+            // Keep recognition defaults — they work well for clear label text
+            decodingTopkIgnoreCutoff = 4;           // Default
+            decodingTotalProbThreshold = 0.9f;      // Default
+            decodingMaxWordCombinations = 5;         // Reduce from default 10
+            // for faster processing
+
+// Tiling — disable since labels typically have short text
+            tiling.enable = false;
+
+            // Defaults work well for label text, but tighten if needed
+            grouping.widthDistanceRatio = 1.5f;     // Default
+            grouping.heightDistanceRatio = 2.0f;    // Default
+            grouping.paragraphHeightDistance = 1.0f; // Default
+        }
+
         val startTime = System.currentTimeMillis()
 
         CoroutineScope(executor.asCoroutineDispatcher()).launch {
             try {
-                val ocrInstance = TextOCR.getTextOCR(textOCRSettings, executor).await()
+                //val ocrInstance = TextOCR.getTextOCR(textOCRSettings, executor).await()
+                val ocrInstance = TextOCR.getTextOCR(textOCRSettings_for_LABEL_INDENTIFICATION, executor).await()
                 textOCR = ocrInstance
 
                 Log.d(TAG, "TextOCR() obj creation / model loading time = ${System.currentTimeMillis() - startTime} milli sec")
@@ -338,17 +378,76 @@ class CameraXActivity : AppCompatActivity() {
         try {
             //val bitmap = CommonUtils.rotateBitmapIfNeeded(image)
             textOCR?.detectWords(bitmap, executor)?.thenAccept { words ->
-                words.forEach {
-                    Log.i(TAG, "#OCR Word: ${it.decodes[0].content.toString()}")
+
+                // Filter words: len >= 2 AND (contains Letters AND Numbers AND Punctuation/Symbols)
+                val regex = Regex("^[a-zA-Z0-9\\p{Punct}\\p{S}]{2,}$")
+                val selectedWords = words.filter { word ->
+                    val content = word.decodes[0].content.toString()
+                    regex.matches(content)
+                }
+
+                selectedWords.forEach {
+                    Log.i(TAG, "#OCR selectedWord: ${it.decodes[0].content.toString()}")
                     val bev = BCEvent(
-                        (it.bbox.x[0])!!.toFloat(),
-                        (it.bbox.y[0])!!.toFloat(),
-                        viewBinding.overlayView.paintRed,
+                        ( (it.bbox.x[0]+it.bbox.x[1])/2 ),
+                        ( (it.bbox.y[0]+it.bbox.y[1])/2),
+                        viewBinding.overlayView.paintGreen,
                         it.decodes[0].content.toString(),
                         System.currentTimeMillis()
                     )
                     viewBinding.overlayView.clq.push(bev)
                 }
+//
+//                //create a queue where saving distances
+//                val distanceQueue = ArrayDeque<Float>()
+//
+//
+//
+//                //seeking invariants for words bboxes
+//// In doOCR()
+//                if (selectedWords.size > 2) {
+//                    selectedWords.forEachIndexed { index, currentWord ->
+//                        // 1. Compute middle point of the current word
+//                        val xavg = (currentWord.bbox.x[0] + currentWord.bbox.x[1]) / 2
+//                        val yavg = (currentWord.bbox.y[0] + currentWord.bbox.y[1]) / 2
+//
+//                        // 2. Swipe through all remaining elements in the list
+//                        for (i in (index + 1) until selectedWords.size) {
+//                            val nextWord = selectedWords[i]
+//
+//                            // Example: Compare distances or check invariants between currentWord and nextWord
+//                            val nextXavg = (nextWord.bbox.x[0] + nextWord.bbox.x[1]) / 2
+//                            val nextYavg = (nextWord.bbox.y[0] + nextWord.bbox.y[1]) / 2
+//
+//                            // Log or process the pair
+//                            // Log.d(TAG, "Comparing '${currentWord.decodes[0].content}' with '${nextWord.decodes[0].content}'")
+//
+//                            //compute distance between currentWord and nextWord
+//                            val distance = kotlin.math.sqrt((xavg - nextXavg).toDouble().pow(2.0) + (yavg - nextYavg).toDouble().pow(2.0))
+//                            distanceQueue.add(distance.toFloat())
+//                        }
+//                    }
+//                }
+//
+//                // ... existing distanceQueue population logic ...
+//
+//// Compute ratios between all elements in distanceQueue
+//                val ratioQueue = ArrayDeque<Float>()
+//                if (distanceQueue.size > 1) {
+//                    for (i in 0 until distanceQueue.size) {
+//                        for (j in (i + 1) until distanceQueue.size) {
+//                            val d1 = distanceQueue[i]
+//                            val d2 = distanceQueue[j]
+//
+//                            if (d2 != 0f) {
+//                                val ratio = d1 / d2
+//                                ratioQueue.add(ratio)
+//                                Log.d(TAG, "Ratio between distance $i and $j: $ratio")
+//                            }
+//                        }
+//                    }
+//                }
+
                 imgproxy.close()
             }?.exceptionally { ex ->
                 imgproxy.close()
@@ -487,15 +586,14 @@ class CameraXActivity : AppCompatActivity() {
         val deviceDetails = "${Build.MANUFACTURER}\n" +
                 "${Build.MODEL}\n" +
                 "${Build.DISPLAY}\n" +
-                "${BuildConfig.APPLICATION_ID}-" +
-                "${BuildConfig.VERSION_NAME}," +
                 "${_android_id}\n"
         return deviceDetails
     }
 
     companion object {
-        private const val TAG = "ocrCameraXActivity"
+        private const val TAG = "videostream-OCR"
         public var isL2Rtext  =  true
+        public const val VIEW_RESET_PERIOD_MS = 250L
     }
 
     fun enableStrictMode() {
