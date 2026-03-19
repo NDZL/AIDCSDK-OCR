@@ -6,6 +6,7 @@ import android.graphics.Matrix
 import android.hardware.camera2.CameraMetadata
 import android.hardware.camera2.CaptureRequest
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import android.view.KeyEvent
 import androidx.annotation.OptIn
@@ -17,6 +18,7 @@ import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
+import androidx.camera.core.internal.utils.ImageUtil.rotateBitmap
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import com.zebra.ai.vision.detector.AIVisionSDK
@@ -24,7 +26,6 @@ import com.zebra.ai.vision.detector.AIVisionSDKLicenseException
 import com.zebra.ai.vision.detector.InferencerOptions
 import com.zebra.ai.vision.detector.InvalidInputException
 import com.zebra.ai.vision.detector.TextOCR
-import com.zebra.ai.vision.internal.utils.ImageConverter.rotateBitmap
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.future.await
@@ -77,6 +78,8 @@ class CameraXActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        periodJobOnCanvas(VIEW_RESET_PERIOD_MS) //refresh overlayView canvas every 0.5s
+
         initializeTextOCR()
         bindCameraUseCases()
     }
@@ -207,17 +210,21 @@ class CameraXActivity : AppCompatActivity() {
             }
 
             Camera2Interop.Extender(imageCaptureBuilder)
-                .setCaptureRequestOption(
-                    CaptureRequest.CONTROL_CAPTURE_INTENT,
-                    CaptureRequest.CONTROL_CAPTURE_INTENT_STILL_CAPTURE
-                )
-                .setCaptureRequestOption(
-                    CaptureRequest.CONTROL_AF_MODE,
-                    CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE
-                )
+//                .setCaptureRequestOption(
+//                    CaptureRequest.CONTROL_CAPTURE_INTENT,
+//                    CaptureRequest.CONTROL_CAPTURE_INTENT_STILL_CAPTURE
+//                )
+//                .setCaptureRequestOption(
+//                    CaptureRequest.CONTROL_AF_MODE,
+//                    CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE
+//                )
                 .setCaptureRequestOption(
                     CaptureRequest.CONTROL_SCENE_MODE,
                     OverlayView.CHOSEN_SCENE
+                )
+                .setCaptureRequestOption(
+                    CaptureRequest.CONTROL_AE_MODE,
+                    CaptureRequest.CONTROL_AE_MODE_ON
                 )
 
             imageCapture = imageCaptureBuilder.build()
@@ -226,7 +233,7 @@ class CameraXActivity : AppCompatActivity() {
                 cameraProvider.bindToLifecycle(
                     this,
                     CameraSelector.DEFAULT_BACK_CAMERA,
-//                    preview,  //HIDDEON ON CUSTOMER'S REQUEST
+                    preview,  //comment out this line to hide the preview usecase
                     imageCapture
                 ).cameraControl.setZoomRatio(OverlayView.ZOOM_RATIO.toFloat())
             } catch (exc: Exception) {
@@ -255,6 +262,24 @@ class CameraXActivity : AppCompatActivity() {
         )
     }
 
+    private fun periodJobOnCanvas(timeInterval: Long) {
+        val handler = Handler()
+        val runnable = object : Runnable {
+            override fun run() {
+
+                viewBinding.overlayView.invalidate()
+
+                viewBinding.overlayView.clq.clear()
+
+
+
+                handler.postDelayed(this, timeInterval)
+
+            }
+        }
+        handler.postDelayed(runnable, timeInterval)
+    }
+
     private fun doOCR(imgproxy: ImageProxy) {
         if (textOCR == null) {
             Log.w(TAG, "TextOCR not initialized")
@@ -266,12 +291,28 @@ class CameraXActivity : AppCompatActivity() {
             try {
                 var bitmap = rotateBitmapIfNeeded(imgproxy)
                 val ocrsb = StringBuilder()
-                Log.i(TAG, "Image to OCR> W${imgproxy.width} x H${imgproxy.height}")
+                Log.i(TAG, "1-shot Image to OCR> W${imgproxy.width} x H${imgproxy.height}")
 
                 textOCR?.detectWords(bitmap, executor)?.thenAccept { words ->
                     words.forEach { word ->
                         Log.i(TAG, "OCR detected: ${word.decodes[0].content}")
                         ocrsb.append(word.decodes[0].content).append(" ")
+
+                        val bbox = word.bbox
+                        val middlePointX = (bbox.x[0]+bbox.x[1])/2
+                        val middlePointY = (bbox.y[0]+bbox.y[1])/2
+
+                        val bev = BCEvent(
+                            middlePointX,
+                            middlePointY,
+                            viewBinding.overlayView.paintGreen,
+                            word.decodes[0].content,
+                            System.currentTimeMillis()
+                        )
+
+                        viewBinding.overlayView.clq.push(bev)
+
+
                     }
                     runOnUiThread {
                         viewBinding.tvOCRout.text = ocrsb.toString()
@@ -291,6 +332,7 @@ class CameraXActivity : AppCompatActivity() {
                 Log.e(TAG, "OCR processing error", e)
                 imgproxy.close()
             }
+            viewBinding.overlayView.postInvalidate()
         }
     }
 
@@ -300,6 +342,8 @@ class CameraXActivity : AppCompatActivity() {
     }
 
     companion object {
-        private const val TAG = "OCRSample"
+        private const val TAG = "1-shot OCR"
+        public const val VIEW_RESET_PERIOD_MS = 250L
+
     }
 }

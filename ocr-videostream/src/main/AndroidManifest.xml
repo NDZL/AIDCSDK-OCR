@@ -15,9 +15,7 @@
         android:label="OCR-VideoStream"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.MyApplication"
-        android:extractNativeLibs="true"
-        >
+        android:theme="@style/Theme.MyApplication">
         <activity
             android:name="com.ndzl.aisuite.ocr.lowlevel.CameraXActivity"
             android:label="ocr-videostream"

@@ -10,7 +10,7 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/ocr-oneshot" />
+            <option value="$PROJECT_DIR$/ocr-videostream" />
           </set>
         </option>
       </GradleProjectSettings>

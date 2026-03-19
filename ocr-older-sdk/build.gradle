@@ -6,14 +6,12 @@ plugins {
 android {
     compileSdk 34
     androidResources {
-     noCompress.add("tar")
+        noCompress 'tar'
+        noCompress.add("tar")
      noCompress.add("tar.crypt")
     }
 
 
-    aaptOptions {
-        noCompress 'tar'
-    }
     packagingOptions {
         jniLibs {
             useLegacyPackaging = true
@@ -35,12 +33,10 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
+        sourceCompatibility JavaVersion.VERSION_21
+        targetCompatibility JavaVersion.VERSION_21
     }
-    kotlinOptions {
-        jvmTarget = "17"
-    }
+
     buildFeatures {
         viewBinding true
     }
@@ -73,6 +69,6 @@ dependencies {
     implementation "androidx.camera:camera-extensions:${camerax_version}"
 
     implementation 'com.github.NDZL:zphlib:1.0.1'
-    implementation("com.zebra.ai.models:ocr:1.3.0@aar")
+    implementation("com.zebra.ai.models:ocr:2.7.3@aar")
     implementation("com.zebra.ai.vision:Zebra-AI-Vision-SDK:2.22.10@aar")
 }

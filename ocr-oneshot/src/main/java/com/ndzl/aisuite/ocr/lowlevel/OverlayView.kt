@@ -8,9 +8,11 @@ import android.graphics.PointF
 import android.util.AttributeSet
 import android.util.Log
 import android.view.View
+import com.ndzl.aisuite.ocr.lowlevel.CameraXActivity.Companion.VIEW_RESET_PERIOD_MS
 import java.util.concurrent.ConcurrentHashMap
 
 import java.util.concurrent.ConcurrentLinkedDeque
+import kotlin.text.compareTo
 
 class OverlayView(context: Context, attrs: AttributeSet?) : View(context, attrs) {
 //    data class BCEvent(val x: Float, val y: Float, val paint: Paint, val timestamp: Timestamp)
@@ -40,6 +42,7 @@ class OverlayView(context: Context, attrs: AttributeSet?) : View(context, attrs)
     val clq = ConcurrentLinkedDeque<BCEvent>() // java.util.concurrent.ConcurrentLinkedQueue<BCEvent>()
     val performanceSet: MutableSet<String> = ConcurrentHashMap.newKeySet()
     val highlightSet: MutableSet<String> = ConcurrentHashMap.newKeySet()
+    var readRate:Int=0
 
     val paintYellow = Paint().apply {
         color = Color.YELLOW
@@ -79,8 +82,26 @@ class OverlayView(context: Context, attrs: AttributeSet?) : View(context, attrs)
         if(clq.isNotEmpty())
             clq.map {
 
-                if (timestamp - (it.timestamp) < 600) {
-                        canvas.drawText( "[${it.word}]",it.xavg, it.yavg, ink)
+                if (timestamp - (it.timestamp) < VIEW_RESET_PERIOD_MS) {
+
+
+                    val XX = it.xavg
+                    val YY = it.yavg
+                    canvas.drawCircle(XX, YY, 20f, it.paint)
+//                        canvas.drawText(
+//                            "${anlzr} ANALYZER: READ RATE ${readRate*1000/ CameraXActivity.VIEW_RESET_PERIOD_MS}/sec",
+//                            20f,
+//                            60f,
+//                            ink
+//                        )
+
+                    canvas.drawText(
+                        "${it.word}",
+                        XX,
+                        YY,
+                        ink
+                    )
+
                 }
                 else {
 
@@ -88,15 +109,10 @@ class OverlayView(context: Context, attrs: AttributeSet?) : View(context, attrs)
 
                 }
             }
-            Log.d("drawCircle", "clq size = "+clq.size.toString())
+        //Log.d("drawCircle", "clq size = "+clq.size.toString())
     }
 
-    fun mapFlippedToOriginalPixel(flipped: PointF, bitmapWidth: Int): PointF {
-        // use -1 if you treat coordinates as integer pixel indices; for float coords this is safe too
-        val origX = bitmapWidth - 1f - flipped.x
-        val origY = flipped.y
-        return PointF(origX, origY)
-    }
+
 
     fun rotateAndScaleCoordinates(
         cameraCoords: Pair<Float, Float>,

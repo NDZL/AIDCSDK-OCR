@@ -8,6 +8,7 @@ import android.graphics.PointF
 import android.util.AttributeSet
 import android.util.Log
 import android.view.View
+import com.ndzl.aisuite.ocr.lowlevel.CameraXActivity.Companion.VIEW_RESET_PERIOD_MS
 import java.util.concurrent.ConcurrentHashMap
 
 import java.util.concurrent.ConcurrentLinkedDeque
@@ -79,14 +80,19 @@ class OverlayView(context: Context, attrs: AttributeSet?) : View(context, attrs)
         if(clq.isNotEmpty())
             clq.map {
 
-                if (timestamp - (it.timestamp) < 600) {
+                if (timestamp - (it.timestamp) < VIEW_RESET_PERIOD_MS) {
 
                    // canvas.drawCircle(it.xavg, it.yavg, 2f, it.paint)
-                    if(CameraXActivity.isL2Rtext)
-                        canvas.drawText( "[${it.word}]",it.xavg, it.yavg, ink)
+                    if(CameraXActivity.isL2Rtext) {
+                        //canvas.drawText("[${it.word}]", it.xavg, it.yavg, ink)
+                        val XX = it.xavg
+                        val YY = it.yavg
+                        canvas.drawCircle(XX, YY, 10f, it.paint)
+                    }
                     else{
                         val mappedPoint = mapFlippedToOriginalPixel(PointF(it.xavg, it.yavg), OverlayView.CAMERA_RESOLUTION_WIDTH) //works only with camera in portrait - for landscape need to detect the rotation and user CAMERA_RESOLUTION_HEIGHT
                         canvas.drawText( "[${it.word}]",mappedPoint.x, mappedPoint.y, ink)
+
                     }
 
 
