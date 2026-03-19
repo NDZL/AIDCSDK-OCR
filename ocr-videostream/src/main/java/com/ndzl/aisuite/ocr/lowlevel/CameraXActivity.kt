@@ -397,7 +397,7 @@ class CameraXActivity : AppCompatActivity() {
                     )
                     viewBinding.overlayView.clq.push(bev)
                 }
-//
+//DROPPED - TOO MANY COMBINATION, QUADRATIC EXPLOSION
 //                //create a queue where saving distances
 //                val distanceQueue = ArrayDeque<Float>()
 //
